@@ -1,0 +1,151 @@
+<html>
+  <head>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.5.1/jscolor.min.js"
+      integrity="sha512-/e+XGe8oSD9M1t0NKNCrUlRsiyeFTiZw4+pmf0g8wTbc8IfiLwJsjTODc/pq3hKhKAdsehJs7STPvX7SkFSpOQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css"
+      integrity="sha512-HqxHUkJM0SYcbvxUw5P60SzdOTy/QVwA1JJrvaXJv4q7lmbDZCmZaqz01UPOaQveoxfYRv1tHozWGPMcuTBuvQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <!-- <div id="svg" v-html="token('hello')" @click="pngToken()"></div>
+
+      SVG
+
+      <hr /> -->
+
+      <div id="png">
+        <img
+          download="foo_1x1.png"
+          id="png-img"
+          style="padding=1em;border: 1px solid gray; width: 100px; height:  100px;"
+          @click="downloadImage(this, 'suggested-filename.jpg')"
+          style="cursor: pointer"
+        />
+
+        <div style="padding: 1em">
+          <button class="btn" @click="pngToken()">Make PNG</button>
+          <p style="padding-top: 1em">
+            Fill color:
+            <input
+              data-jscolor=""
+              id="fillColorInput"
+              @change="updatePicker()"
+            />
+          </p>
+          <p>
+            Ring color:
+            <input
+              data-jscolor=""
+              id="ringColorInput"
+              @change="updatePicker()"
+            />
+          </p>
+          <p>
+            Ring width:
+            <input type="number" v-model="ringWidth" id="ringWidthInput" />
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      var MyApp = new Vue({
+        el: "#app",
+        data: {
+          fillColor: "yellow",
+          ringColor: "green",
+          ringWidth: 15,
+          dataUrl: "",
+        },
+        methods: {
+          updatePicker() {
+            fillPicker = document.getElementById("fillColorInput").jscolor;
+            ringPicker = document.getElementById("ringColorInput").jscolor;
+            console.log(fillPicker);
+            console.log(fillPicker.toHEXString());
+            this.fillColor = fillPicker.toHEXString();
+            this.ringColor = ringPicker.toHEXString();
+          },
+
+          token(fillColor, ringColor, ringWidth) {
+            let clampedRingWidth = Math.min(ringWidth, 50);
+            let radius = Math.max(50 - clampedRingWidth / 2, 25);
+            console.log(radius);
+            return `
+            <svg
+              version='1.1' width='100' height='100'
+              xmlns='http://www.w3.org/2000/svg'>
+              <circle cx='50' cy='50' r='${radius}'
+              stroke='${ringColor}'
+              stroke-width='${clampedRingWidth}'
+              fill='${fillColor}'
+              fill-rule='nonzero' />
+            </svg>`;
+          },
+
+          pngToken() {
+            console.log("triggered");
+            let svgToken = this.token(
+              this.fillColor,
+              this.ringColor,
+              this.ringWidth
+            );
+            let svgToken64 = btoa(unescape(encodeURIComponent(svgToken)));
+            let svgTokenUrl = `data:image/svg+xml;charset=utf-8;base64,${svgToken64}`;
+            console.log(svgToken);
+            console.log(svgToken64);
+            const image = new Image();
+
+            image.addEventListener("load", () => {
+              console.log("listener kicked");
+              const canvas = document.createElement("canvas");
+              canvas.setAttribute("height", 100);
+              canvas.setAttribute("width", 100);
+              const context = canvas.getContext("2d");
+
+              context.drawImage(image, 0, 0, 100, 100);
+              const dataUrl = canvas.toDataURL("image/png");
+              console.log(dataUrl);
+              pngEl = document.getElementById("png-img");
+              pngEl.src = dataUrl;
+              this.dataUrl = dataUrl;
+            });
+            image.src = svgTokenUrl;
+          },
+
+          downloadImage(image, filename) {
+            const link = document.createElement("a");
+            console.log("#bAD".replace("#", ""));
+            link.href = this.dataUrl;
+            link.download = `token_${this.fillColor.replace("#", "")}_${
+              this.ringWidth
+            }_${this.ringColor.replace("#", "")}_1x1.png`;
+            link.target = "_blank"; // Optional, opens the image in a new tab
+
+            // Append the link to the body
+            document.body.appendChild(link);
+
+            // Simulate a click on the link to start the download
+            link.click();
+
+            // Clean up
+            document.body.removeChild(link);
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
