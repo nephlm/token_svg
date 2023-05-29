@@ -105,7 +105,12 @@
           </div>
           <div class="field">
             <label class="label">Ring width:</label>
-            <input class="input" type="number" v-model="ringWidth" id="ringWidthInput" />
+            <input class="input"
+                   type="number"
+                   v-model="ringWidth"
+                   id="ringWidthInput"
+                   max="50"
+                   min="0" />
           </div>
           <div class="field">
             <label class="label">label Color</label>
@@ -143,8 +148,34 @@
             },
             mounted: function() {
                 console.log("mounted called");
-                jscolor.trigger();
-                this.label = this.randomString();
+                jscolor.ready(() => {
+                    console.log('jscolor is ready')
+                    var fillColorPicker = document.getElementById("fillColorInput").jscolor
+                    fillColorPicker.randomize(maxS = 90, minS = 10, minV = 10, maxV = 90)
+                    this.fillColor = fillColorPicker.toHEXString()
+                    var ringColorPicker = document.getElementById("ringColorInput").jscolor
+                    ringColorPicker.fromString(this.fillColor)
+                    ringColorPicker.channel('h', (fillColorPicker.channel('h') + 180) % 360)
+                    if (ringColorPicker.isLight()) {
+                        ringColorPicker.channel('v', 10)
+                    } else {
+                        ringColorPicker.channel('v', 90)
+                    }
+                    this.ringColor = ringColorPicker.toHEXString()
+                    this.labelColor = this.ringColor
+
+                    this.label = this.randomString();
+
+                    jscolor.trigger()
+                    // var randomFillDecimal = Math.floor(Math.random() * (Math.pow(256, 3)));
+                    // this.fillColor = '#' + randomFillDecimal.toString(16).toUpperCase().padStart(6, '0');
+                    // var randomFillDecimal = Math.floor(Math.random() * (Math.pow(256, 3)));
+                    // this.fillColor = '#' + randomFillDecimal.toString(16).toUpperCase().padStart(6, '0');
+                    this.pngToken();
+
+                    console.log(this.fillColor)
+                })
+
             },
             methods: {
                 updatePicker() {
@@ -160,7 +191,6 @@
                     let clampedRingWidth = Math.min(ringWidth, 50);
                     let radius = Math.max(50 - clampedRingWidth / 2, 25);
                     if (text == undefined) text = "";
-                    console.log(radius);
                     return `
             <svg version='1.1' width='100' height='100' xmlns='http://www.w3.org/2000/svg'>
               <circle cx='50' cy='50' r='${radius}' stroke='${ringColor}' stroke-width='${clampedRingWidth}' fill='${fillColor}' fill-rule='nonzero' />
@@ -171,7 +201,7 @@
                 },
 
                 pngToken() {
-                    console.log("triggered");
+                    console.log("making png token");
                     let svgToken = this.token(
                         this.fillColor,
                         this.ringColor,
@@ -181,8 +211,6 @@
                     );
                     let svgToken64 = btoa(unescape(encodeURIComponent(svgToken)));
                     let svgTokenUrl = `data:image/svg+xml;charset=utf-8;base64,${svgToken64}`;
-                    console.log(svgToken);
-                    console.log(svgToken64);
                     const image = new Image();
 
                     image.addEventListener("load", () => {
