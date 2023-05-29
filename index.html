@@ -13,6 +13,10 @@
           integrity="sha512-HqxHUkJM0SYcbvxUw5P60SzdOTy/QVwA1JJrvaXJv4q7lmbDZCmZaqz01UPOaQveoxfYRv1tHozWGPMcuTBuvQ=="
           crossorigin="anonymous"
           referrerpolicy="no-referrer" />
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/microtip@0.2.2/microtip.min.css">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="Keywords"
@@ -58,6 +62,14 @@
             cursor: pointer
         }
 
+        .icon {
+            vertical-align: middle;
+        }
+
+        .recycle {
+            font-size: xx-large;
+        }
+
         #app {
             padding-top: 2em;
         }
@@ -83,28 +95,49 @@
                class="generated-image"
                @click="downloadImage(this, 'suggested-filename.jpg')" />
           <button class="button make-button is-fullwidth" @click="pngToken()">Make PNG</button>
+          <!-- fill color  -->
           <div class="field">
-            <label class="label">Fill Color</label>
+            <label class="label ">
+              <span class="mt-2">Fill Color</span>
+              <a @click="generateFromFill()"
+                 title="Regenerate Ring and Label colors based on Fill color.">
+                <span class="material-symbols-outlined icon">bolt</span>
+              </a>
+              <a @click="randomFillColor()" title="Randomize Fill Color.">
+                <span class=" icon recycle">⟳</span>
+              </a>
+            </label>
             <div class="control">
               <input v-model="fillColor"
                      class="input"
                      data-jscolor=""
                      id="fillColorInput"
-                     @change="updatePicker()" />
+                     @change="updatePicker('fill')" />
             </div>
           </div>
+          <!-- Ring Color-->
           <div class="field">
-            <label class="label">Ring Color</label>
+            <label class="label">
+              Ring Color
+              <a @click="randomRingColor()" title="Randomize Ring Color.">
+                <span class=" icon recycle">⟳</span>
+              </a>
+            </label>
             <div class="control">
               <input v-model="ringColor"
                      class="input"
                      data-jscolor=""
                      id="ringColorInput"
-                     @change="updatePicker()" />
+                     @change="updatePicker('ring')" />
             </div>
           </div>
           <div class="field">
-            <label class="label">Ring width:</label>
+            <label class="label">
+              Ring width
+              <a @click="randomRingWidth()" title="Randomize Ring Width.">
+                <span class=" icon recycle">⟳</span>
+              </a>
+            </label>
             <input class="input"
                    type="number"
                    v-model="ringWidth"
@@ -112,22 +145,33 @@
                    max="50"
                    min="0" />
           </div>
+          <!-- Label Color-->
           <div class="field">
-            <label class="label">label Color</label>
+            <label class="label">
+              Label Color
+              <a @click="randomLabelColor()" title="Randomize Label Color.">
+                <span class=" icon recycle">⟳</span>
+              </a>
+            </label>
             <div class="control">
               <input class="input"
                      v-model="labelColor"
                      data-jscolor=""
                      id="labelColorInput"
-                     @change="updatePicker()" />
+                     @change="updatePicker('label')" />
             </div>
           </div>
           <div class="field">
-            <label class="label">Label</label>
+            <label class="label">
+              Label
+              <a @click="randomLabel()" title="Randomize Label String.">
+                <span class=" icon recycle">⟳</span>
+              </a>
+            </label>
             <input class="input"
                    type="text"
                    v-model="label"
-                   id="ringWidthInput"
+                   id="labelInput"
                    maxlength="2" />
           </div>
         </div>
@@ -140,7 +184,7 @@
                 fillColor: "#83AEFF",
                 ringColor: "#005500",
                 labelColor: "#000000",
-                ringWidth: Math.floor(Math.random() * (25 - 10 + 1)) + 10,
+                ringWidth: Math.floor(Math.random() * (20 - 10 + 1)) + 10,
                 label: "",
                 dataUrl: "",
                 lightDefaultPallette: [],
@@ -150,41 +194,81 @@
                 console.log("mounted called");
                 jscolor.ready(() => {
                     console.log('jscolor is ready')
-                    var fillColorPicker = document.getElementById("fillColorInput").jscolor
-                    fillColorPicker.randomize(maxS = 90, minS = 10, minV = 10, maxV = 90)
+                    var fillColorPicker = this.randomFillColor()
                     this.fillColor = fillColorPicker.toHEXString()
-                    var ringColorPicker = document.getElementById("ringColorInput").jscolor
-                    ringColorPicker.fromString(this.fillColor)
-                    ringColorPicker.channel('h', (fillColorPicker.channel('h') + 180) % 360)
-                    if (ringColorPicker.isLight()) {
-                        ringColorPicker.channel('v', 10)
-                    } else {
-                        ringColorPicker.channel('v', 90)
-                    }
-                    this.ringColor = ringColorPicker.toHEXString()
-                    this.labelColor = this.ringColor
-
-                    this.label = this.randomString();
+                    this.generateFromFill()
+                    this.randomRingWidth();
+                    this.randomLabel()
 
                     jscolor.trigger()
-                    // var randomFillDecimal = Math.floor(Math.random() * (Math.pow(256, 3)));
-                    // this.fillColor = '#' + randomFillDecimal.toString(16).toUpperCase().padStart(6, '0');
-                    // var randomFillDecimal = Math.floor(Math.random() * (Math.pow(256, 3)));
-                    // this.fillColor = '#' + randomFillDecimal.toString(16).toUpperCase().padStart(6, '0');
                     this.pngToken();
 
-                    console.log(this.fillColor)
+                    console.log(this.labelColor)
                 })
 
             },
             methods: {
-                updatePicker() {
-                    fillPicker = document.getElementById("fillColorInput").jscolor;
-                    ringPicker = document.getElementById("ringColorInput").jscolor;
-                    labelPicker = document.getElementById("labelColorInput").jscolor;
-                    this.fillColor = fillPicker.toHEXString();
-                    this.ringColor = ringPicker.toHEXString();
-                    this.labelColor = labelPicker.toHEXString();
+                randomFillColor() {
+                    var picker = document.getElementById("fillColorInput").jscolor
+                    this.randomizePicker(picker)
+                    this.fillColor = picker.toHEXString()
+                    return picker
+
+                },
+                randomRingColor() {
+                    var picker = document.getElementById("ringColorInput").jscolor
+                    this.randomizePicker(picker)
+                    this.ringColor = picker.toHEXString()
+                    return picker
+                },
+                randomLabelColor() {
+                    var picker = document.getElementById("labelColorInput").jscolor
+                    this.randomizePicker(picker)
+                    this.labelColor = picker.toHEXString()
+                    return picker
+                },
+                randomizePicker(picker) {
+                    picker.randomize(maxS = 90, minS = 10, minV = 10, maxV = 90)
+                    return picker
+                },
+                randomRingWidth() {
+                    console.log('rRW called')
+                    const val = Math.floor(Math.random() * (20 - 10 + 1)) + 10
+                    this.ringWidth = val
+                },
+                randomLabel() {
+                    this.label = this.randomString()
+                },
+                generateFromFill() {
+                    var fillColorPicker = document.getElementById("fillColorInput").jscolor
+
+                    // ring
+                    var ringColorPicker = document.getElementById("ringColorInput").jscolor
+                    ringColorPicker.fromString(this.fillColor)
+                    ringColorPicker.channel('h', (fillColorPicker.channel('h') + 180) % 360)
+                    ringColorPicker.channel('s', 100 - fillColorPicker.channel('s'))
+                    ringColorPicker.channel('v', 100 - fillColorPicker.channel('v'))
+                    this.ringColor = ringColorPicker.toHEXString()
+
+                    //label
+                    var labelColorPicker = document.getElementById("labelColorInput").jscolor
+                    labelColorPicker.fromString(ringColorPicker.toHEXString())
+                    this.labelColor = labelColorPicker.toHEXString()
+
+                },
+                updatePicker(item) {
+                    console.log(item)
+                    if (item == 'fill') {
+                        picker = document.getElementById('fillColorInput').jscolor;
+                        this.fillColor = picker.toHEXString()
+
+                    } else if (item === 'label') {
+                        picker = document.getElementById('labelColorInput').jscolor;
+                        this.labelColor = picker.toHEXString()
+                    } else if (item === 'ring') {
+                        picker = document.getElementById('ringColorInput').jscolor;
+                        this.ringColor = picker.toHEXString()
+                    }
                 },
 
                 token(fillColor, ringColor, ringWidth, labelColor, text) {
@@ -202,6 +286,7 @@
 
                 pngToken() {
                     console.log("making png token");
+                    console.log([this.fillColor, this.ringColor, this.labelColor])
                     let svgToken = this.token(
                         this.fillColor,
                         this.ringColor,
@@ -214,7 +299,6 @@
                     const image = new Image();
 
                     image.addEventListener("load", () => {
-                        console.log("listener kicked");
                         const canvas = document.createElement("canvas");
                         canvas.setAttribute("height", 100);
                         canvas.setAttribute("width", 100);
@@ -222,7 +306,6 @@
 
                         context.drawImage(image, 0, 0, 100, 100);
                         const dataUrl = canvas.toDataURL("image/png");
-                        console.log(dataUrl);
                         pngEl = document.getElementById("png-img");
                         pngEl.src = dataUrl;
                         this.dataUrl = dataUrl;
@@ -232,7 +315,6 @@
 
                 downloadImage(image, filename) {
                     const link = document.createElement("a");
-                    console.log("#bAD".replace("#", ""));
                     link.href = this.dataUrl;
                     link.download = `token_${this.fillColor.replace("#", "")}_${
               this.ringWidth
